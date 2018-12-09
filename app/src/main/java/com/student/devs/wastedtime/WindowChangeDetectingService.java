@@ -13,6 +13,11 @@ import android.widget.Toast;
 import java.util.Calendar;
 import java.util.Date;
 
+
+//TODO lorsque l'utilisateur ouvre l'appli pour la première fois on affiche un temps qui n'a pas de sens et qui n'est pas lié à une appli, il faudra donc ne pas le prendre en compte lors de l'envoie au serveur
+
+
+
 import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
 
 public class WindowChangeDetectingService extends AccessibilityService {
@@ -57,11 +62,14 @@ public class WindowChangeDetectingService extends AccessibilityService {
                     }
 
                     Date myDate = new Date(preferences.getLong("timeStart", -1)); //date a laquelle l'utilisateur a fermé son application
-
                     long time_diff = (currentTime.getTime() - myDate.getTime()) / 1000;
 
-                    Toast.makeText(this, "Vous êtes resté " + String.valueOf(time_diff) + " secondes sur " + app_name, Toast.LENGTH_LONG).show();
-
+                    // si c'est la première fois que l'utilisateur utilise WastedTime...
+                    if (time_diff > 86.400) {
+                    }
+                    else if (time_diff < 86.400){
+                        Toast.makeText(this, "Vous êtes resté " + String.valueOf(time_diff) + " secondes sur " + app_name, Toast.LENGTH_LONG).show();
+                    }
                     preferences.edit().putLong("timeStart", currentTime.getTime()).apply();
                     preferences.edit().putString("packageNameStart", componentName.getPackageName()).apply();
                 }
