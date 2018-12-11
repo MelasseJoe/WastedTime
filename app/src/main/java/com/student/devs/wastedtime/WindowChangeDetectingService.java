@@ -1,11 +1,17 @@
 package com.student.devs.wastedtime;
 
 import android.accessibilityservice.AccessibilityService;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.Toast;
@@ -14,11 +20,13 @@ import java.util.Calendar;
 import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
 
 public class WindowChangeDetectingService extends AccessibilityService {
+
+    int threshold_mediun = 20;
+    int threshold_min = 60;
+
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
 
-        int threshold_mediun = 10;
-        int threshold_min = 3 * 60;
 
         boolean isServiceActive = Utils.getSharedPref(this, R.string.sharedprefs_key1, false);
         if (isServiceActive && event.getEventType() == TYPE_WINDOW_STATE_CHANGED) {
@@ -28,7 +36,7 @@ public class WindowChangeDetectingService extends AccessibilityService {
             SharedPreferences preferences = getApplicationContext().getSharedPreferences("perso", Context.MODE_PRIVATE);
             PackageManager pm = getPackageManager();
 
-            String app_name = preferences.getString("packageNameStart", "");
+            String app_name;
             String packageNamePrev = preferences.getString("packageNamePrev","");
             String packageNameStart = preferences.getString("packageNameStart","");
             String packageNamePresent = componentName.getPackageName();
@@ -39,56 +47,67 @@ public class WindowChangeDetectingService extends AccessibilityService {
             try {
                 app_name = (String)pm.getApplicationLabel(pm.getApplicationInfo(preferences.getString("packageNameStart", ""), PackageManager.GET_META_DATA));
             } catch (PackageManager.NameNotFoundException e) {
+                app_name = preferences.getString("packageNameStart", "");
                 e.printStackTrace();
             }
 
             boolean isActivity = activityInfo != null;
             if (isActivity) {
+
+                //si le téléphone vient d'être déverouillé
+                if (preferences.getBoolean("HaveBeenLocked",false)){
+
+                    preferences.edit().putBoolean("HaveBeenLocked",false).apply();
+
+                    preferences.edit().putLong("timePrev", -1).apply();
+                    preferences.edit().putString("packageNamePrev", "").apply();
+                    preferences.edit().putLong("timeStart", currentTime).apply();
+                    preferences.edit().putString("packageNameStart", packageNamePresent).apply();
+
+                    Log.d("Debug", "Phone unLocked");
+                }
+
                 //si l'activity que l'on vient d'ouvrir n'appartient pas à la même appli que l'appli précédente
                 if(!packageNamePresent.equals(packageNameStart)) {
 
-                    //si le téléphone vient d'être déverouillé
-                    if (PhoneUnlockedReceiver.unLocked){
+                    long timeDiff = (currentTime - timeStart) / 1000 ;
 
-                        PhoneUnlockedReceiver.unLocked = false;
-                        preferences.edit().putLong("timeStart", currentTime).apply(); //permet d'éviter de compter le temps passé en Locked
-                        /*
-                            Avec cette méthode on ne compte plus le temps passé avec le téléphone verouillé comme du temps passé sur une appli
-                            cependant quand l'utilisateur revient sur son téléphone, le premier changement d'activité ne sera pas comptabiliser
-                            (ex: il unLock son téléphone et est directement sur YouTube,au bout de 30 min il va sur Facebook, le temps passé
-                            sur Youtube ne sera pas comptabiliser car c'est l'activité qui a été ouverte juste aprés le "unLock")
-
-                            Le problème se posera pas souvent mais parfois on perdra une donnée
-                         */
-                    }
-
-                    long timeDiff = (currentTime - timeStart) ; /* "/1000" a remettre version finale*/
-
-                    if(packageNamePrev.equals(packageNamePresent) && timeDiff < threshold_mediun)
+                    if(packageNamePrev.equals(packageNamePresent) && timeDiff < threshold_mediun)   //L'utilisateur revient sur la meme appli en moi de "threshold_medium" secondes
                     {
-                        preferences.edit().putLong("timePrev", timePrev + timeDiff).apply();
-                        preferences.edit().putLong("timeStart", timePrev).apply();
+                        preferences.edit().putLong("timePrev", timePrev + timeDiff * 1000).apply();
+                        preferences.edit().putLong("timeStart", timePrev + timeDiff * 1000).apply();
                         preferences.edit().putString("packageNameStart", packageNamePrev).apply();
 
+                        Log.d("Debug", "if");
+                        Log.d("Debug", "packageNamePresent   " + preferences.getString("packageNamePrev",""));
+                        Log.d("Debug", "packageNameStart   " + preferences.getString("packageNameStart",""));
                     }
-                    else if(timeDiff < threshold_mediun)
+                    else if(timeDiff < threshold_mediun)    //L'utilisateur passe moins de "threshold_medium" secondes sur un appli donc on ne change pas l'applis "prev"
                     {
-                        preferences.edit().putLong("timePrev", timePrev + timeDiff).apply();
+                        preferences.edit().putLong("timePrev", timePrev + timeDiff * 1000).apply();
                         preferences.edit().putLong("timeStart", currentTime).apply();
                         preferences.edit().putString("packageNameStart", packageNamePresent).apply();
-                        // si ce n'est pas la première fois que l'utilisateur utilise WastedTime...
-                        if (timeStart != -1){
-                            Toast.makeText(this, "Vous êtes resté " + String.valueOf(timeDiff) + " secondes sur " + app_name, Toast.LENGTH_LONG).show();
-                        }
+
+                        Log.d("Debug", "else if");
+                        Log.d("Debug", "packageNameStart   " + preferences.getString("packageNameStart",""));
+                        Log.d("Debug", "packageNamePrev   " + preferences.getString("packageNamePrev",""));
                     }
                     else {
                         preferences.edit().putLong("timePrev", timeStart).apply();
                         preferences.edit().putString("packageNamePrev", packageNameStart).apply();
                         preferences.edit().putLong("timeStart", currentTime).apply();
                         preferences.edit().putString("packageNameStart", packageNamePresent).apply();
+
+                        Log.d("Debug", "else");
+
                         // si ce n'est pas la première fois que l'utilisateur utilise WastedTime...
                         if (timeStart != -1){
                             Toast.makeText(this, "Vous êtes resté " + String.valueOf(timeDiff) + " secondes sur " + app_name, Toast.LENGTH_LONG).show();
+
+                            if(timeDiff > threshold_min)
+                            {
+                                showNotification(getApplicationContext(),"Notification","Combien de temps pensez vous avoir passer sur " + app_name + " ?",1,new Intent(), packageNameStart);
+                            }
                         }
                     }
                 }
@@ -99,6 +118,7 @@ public class WindowChangeDetectingService extends AccessibilityService {
     @Override
     public void onInterrupt() {
         // Ignored
+        Log.d("Debug", "interrupt");
     }
 
     private ActivityInfo getActivityInfo(ComponentName componentName) {
@@ -108,6 +128,40 @@ public class WindowChangeDetectingService extends AccessibilityService {
             return null;
         }
     }
+
+    public void showNotification(Context context, String title, String body, int notificationId, Intent intent, String package_name) {
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        String channelId = "channel-01";
+        String channelName = "Channel Name";
+        int importance = NotificationManager.IMPORTANCE_HIGH;
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationChannel mChannel = new NotificationChannel(
+                    channelId, channelName, importance);
+            notificationManager.createNotificationChannel(mChannel);
+        }
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, channelId)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(title)
+                .setContentText(body);
+
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+        stackBuilder.addNextIntent(intent);
+        /*PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(
+                0,
+                PendingIntent.FLAG_UPDATE_CURRENT
+        );*/
+
+        Intent i = new Intent(this, question_activity.class);
+        i.putExtra("package", package_name);
+
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
+                i, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        mBuilder.setContentIntent(contentIntent);
+        mBuilder.setAutoCancel(true);
+        notificationManager.notify(notificationId, mBuilder.build());
+    }
 }
-
-
