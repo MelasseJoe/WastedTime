@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#212121">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Estimer votre temps passé sur : "
+        android:layout_gravity="center"
+        android:textSize="20sp"
+        android:layout_marginTop="50sp"
+        android:textColor="#FFFFFF"
+        android:fontFamily="sans-serif-condensed"/>
+
+    <ImageView
+        android:id="@+id/icon_app"
+        android:layout_width="200sp"
+        android:layout_height="200sp"
+        android:layout_gravity="center"
+        android:layout_marginTop="30sp"/>
+    <TextView
+        android:id="@+id/name_app"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Facebook"
+        android:textSize="30sp"
+        android:layout_gravity="center"
+        android:layout_marginTop="5sp"
+        android:textColor="#FFFFFF"
+        android:fontFamily="sans-serif-condensed"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="      Choississez une durée      "
+        android:onClick="wastedTime"
+        android:layout_gravity="center"
+        android:layout_marginTop="50sp"
+        android:fontFamily="sans-serif-condensed"
+        android:textAllCaps="false"
+        android:textColor="#000000"/>
+
+
+
+</LinearLayout>
