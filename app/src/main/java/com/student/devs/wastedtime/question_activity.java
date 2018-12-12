@@ -2,6 +2,7 @@ package com.student.devs.wastedtime;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
@@ -20,6 +21,8 @@ public class question_activity extends Activity {
 
     String app_name;
     Drawable app_icon;
+    TimePicker timePicker;
+    AlertDialog.Builder adb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,27 +62,25 @@ public class question_activity extends Activity {
     {
         LayoutInflater factory = LayoutInflater.from(question_activity.this);
         final View alertDialogView = factory.inflate(R.layout.time_picker, null);
-
+        timePicker = alertDialogView.findViewById(R.id.timePicker);
+        timePicker.setIs24HourView(true);
         //Création de l'AlertDialog
-        AlertDialog.Builder adb = new AlertDialog.Builder(question_activity.this);
+        adb = new AlertDialog.Builder(question_activity.this);
 
         //On affecte la vue personnalisé que l'on a crée à notre AlertDialog
         adb.setView(alertDialogView);
 
+        adb.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @RequiresApi(api = Build.VERSION_CODES.M)
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                        int hours = timePicker.getHour();
+                        int minutes = timePicker.getMinute();
+                        Toast.makeText(getApplicationContext(), "Vous pensez être resté " + hours +" heures " + minutes + " minutes sur " + app_name, Toast.LENGTH_LONG).show();
+                        finish();
+                    }
+                });
         adb.show();
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    public void edit_time(View v)
-    {
-        LayoutInflater factory = LayoutInflater.from(question_activity.this);
-        final View alertDialogView = factory.inflate(R.layout.time_picker, null);
-
-        TimePicker timePicker = alertDialogView.findViewById(R.id.timePicker);
-        int time = timePicker.getHour() * 60 + timePicker.getMinute();
-
-        Toast.makeText(this, "Vous pensez être rester " + time + " minutes sur " + app_name, Toast.LENGTH_LONG).show();
-
     }
 
 }

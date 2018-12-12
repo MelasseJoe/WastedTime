@@ -15,8 +15,13 @@ public class PhoneLockedReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Intent i = new Intent(context, UpdateService.class);
-        context.startService(i);
+
+        if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
+            Log.d("startuptest", "StartUpBootReceiver BOOT_COMPLETED");
+
+            Intent i = new Intent(context, UpdateService.class);
+            context.startService(i);
+        }
     }
 
 }

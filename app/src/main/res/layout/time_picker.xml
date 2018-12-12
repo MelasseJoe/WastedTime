@@ -17,11 +17,4 @@
         android:layout_gravity="center"
         android:timePickerMode="spinner"></TimePicker>
 
-    <Button
-        android:layout_gravity="end"
-        android:layout_width="75dp"
-        android:layout_height="75dp"
-        android:background="@drawable/ok"
-        android:onClick="edit_time"/>
-
 </LinearLayout>
