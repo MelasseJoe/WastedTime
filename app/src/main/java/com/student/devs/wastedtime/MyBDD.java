@@ -3,6 +3,7 @@ package com.student.devs.wastedtime;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -48,7 +49,7 @@ public class MyBDD extends SQLiteOpenHelper
             Appli + " TEXT, " +
             Hour + " TEXT);";
 
-    public MyBDD(Context context) {
+    public MyBDD(DialogInterface.OnClickListener context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 

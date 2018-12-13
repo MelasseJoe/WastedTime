@@ -77,6 +77,22 @@ public class question_activity extends Activity {
                         int hours = timePicker.getHour();
                         int minutes = timePicker.getMinute();
                         Toast.makeText(getApplicationContext(), "Vous pensez être resté " + hours +" heures " + minutes + " minutes sur " + app_name, Toast.LENGTH_LONG).show();
+
+                        //Creation de la base de donnée
+                        MyBDD database = new MyBDD(this);
+
+                        //Creation d'une humeur à partir de l'id de l'utilisateur et de son humeur
+                        Application appli = new Application(app_name, appliUser, String.valueOf(hours*60 + minutes), appliRealTime);
+
+                        //Ajout de l'humeur dans la base de donnée
+                        database.addAppli(appli);
+
+                        //Envoi de l'humeur dans la base de donnée du serveur
+                        Send objSend = new Send();
+                        objSend.setMyBDD(database);
+                        objSend.execute("");
+
+
                         finish();
                     }
                 });
