@@ -41,7 +41,8 @@
         android:layout_marginTop="50sp"
         android:fontFamily="sans-serif-condensed"
         android:textAllCaps="false"
-        android:textColor="#000000"/>
+        android:textColor="#000000"
+        android:background="@drawable/my_button"/>
 
 
 

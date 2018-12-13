@@ -7,8 +7,10 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Entrer le temps que vous pensez avoir passer sur l'application :"
-        android:textColor="#000"/>
+        android:textAlignment="center"
+        android:fontFamily="sans-serif-condensed"
+        android:text="Entrer le temps estimé :"
+        android:textColor="#000000"/>
 
     <TimePicker
         android:id="@+id/timePicker"

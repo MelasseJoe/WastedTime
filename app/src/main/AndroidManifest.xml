@@ -12,7 +12,7 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".question_activity"
             android:launchMode="singleInstance"
             android:exported="true">
             <intent-filter>
@@ -32,7 +32,7 @@
                 android:resource="@xml/windowchangedetectingservice" />
         </service>
 
-        <activity android:name=".question_activity"/>
+        <activity android:name=".MainActivity"/>
 
         <service android:name=".UpdateService"/>
         <receiver android:name=".PhoneLockedReceiver"/>
