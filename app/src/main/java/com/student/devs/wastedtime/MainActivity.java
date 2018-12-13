@@ -1,6 +1,7 @@
 package com.student.devs.wastedtime;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -11,14 +12,27 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.media.MediaScannerConnection;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Switch;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.ToggleButton;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Calendar;
 
 public class MainActivity extends Activity {
@@ -28,6 +42,7 @@ public class MainActivity extends Activity {
     private EditText mEditPackage;
     private EditText mEditClass;
     private Switch mSwitch;
+    private String id_user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +50,8 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         //permet de détecter quand le téléphone est Locked ou unLocked
         startService(new Intent(MainActivity.this, UpdateService.class));
+
+        synchroIdUser();
 
         SharedPreferences preferences = getApplicationContext().getSharedPreferences("perso", Context.MODE_PRIVATE);
         String packageNamePresent = getPackageName();
@@ -74,44 +91,72 @@ public class MainActivity extends Activity {
         super.onDestroy();
     }
 
-    /**
-     * Permet d'envoyer une notification à l'utilisateur
-     * @param context
-     * @param title
-     * @param body
-     * @param notificationId
-     * @param intent
-     */
-    public void showNotification(Context context, String title, String body, int notificationId, Intent intent) {
-        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+    public void synchroIdUser()
+    {
+        String id = readData("id_user");
 
-        String channelId = "channel-01";
-        String channelName = "Channel Name";
-        int importance = NotificationManager.IMPORTANCE_HIGH;
+        if(id.equals("error"))
+        {
+            Calendar calendar = Calendar.getInstance();
+            id_user = String.valueOf(calendar.getTimeInMillis());
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            NotificationChannel mChannel = new NotificationChannel(
-                    channelId, channelName, importance);
-            notificationManager.createNotificationChannel(mChannel);
+            writeData("id_user", id_user);
         }
+        else
+        {
+            id_user = id;
+        }
+    }
 
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, channelId)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(title)
-                .setContentText(body);
+    public void writeData(String file,String data)
+    {
+        try {
+            // Creates a file in the primary external storage space of the
+            // current application.
+            // If the file does not exists, it is created.
+            File testFile = new File(this.getExternalFilesDir(null), file + ".txt");
+            if (!testFile.exists())
+                testFile.createNewFile();
 
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-        stackBuilder.addNextIntent(intent);
-        /*PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(
-                0,
-                PendingIntent.FLAG_UPDATE_CURRENT
-        );*/
+            // Adds a line to the file
+            BufferedWriter writer = new BufferedWriter(new FileWriter(testFile, true /*append*/));
+            writer.write(data);
+            writer.close();
+            // Refresh the data so it can seen when the device is plugged in a
+            // computer. You may have to unplug and replug the device to see the
+            // latest changes. This is not necessary if the user should not modify
+            // the files.
+            MediaScannerConnection.scanFile(this,
+                    new String[]{testFile.toString()},
+                    null,
+                    null);
+        } catch (IOException e) {
+            Log.e("ReadWriteFile", "Unable to write to the " + file + ".txt file.");
+        }
+    }
 
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
-                new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+    public String readData(String file)
+    {
+        String textFromFile = "error";
+        // Gets the file from the primary external storage space of the
+        // current application.
+        File testFile = new File(this.getExternalFilesDir(null), file + ".txt");
+        if (testFile != null) {
+            BufferedReader reader;
+            try {
+                reader = new BufferedReader(new FileReader(testFile));
+                String line;
 
-        mBuilder.setContentIntent(contentIntent);
-        mBuilder.setAutoCancel(true);
-        notificationManager.notify(notificationId, mBuilder.build());
+                while ((line = reader.readLine()) != null) {
+                    textFromFile += line.toString();
+                    textFromFile += "\n";
+                }
+                reader.close();
+            } catch (Exception e) {
+                Log.e("ReadWriteFile", "Unable to read the " + file + ".txt file.");
+                return textFromFile;
+            }
+        }
+        return textFromFile;
     }
 }

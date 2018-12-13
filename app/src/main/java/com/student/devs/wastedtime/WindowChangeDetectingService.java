@@ -109,7 +109,7 @@ public class WindowChangeDetectingService extends AccessibilityService {
 
                             if(timeDiff > threshold_min)
                             {
-                                scheduleNotification("Combien de temps pensez vous avoir passer sur " + app_name + " ?", (threshold_mediun-1)*1000, packageNameStart);
+                                scheduleNotification("Combien de temps pensez vous avoir passer sur " + app_name + " ?", (threshold_mediun-1)*1000, packageNameStart, timeDiff);
                                 //showNotification(getApplicationContext(),"Notification","Combien de temps pensez vous avoir passer sur " + app_name + " ?",1,new Intent(), packageNameStart);
                             }
                         }
@@ -170,11 +170,12 @@ public class WindowChangeDetectingService extends AccessibilityService {
         notificationManager.notify(notificationId, mBuilder.build());
     }
 
-    private void scheduleNotification(String corps, int delay, String package_name) {
+    private void scheduleNotification(String corps, int delay, String package_name, long timeDiff) {
 
         Intent notificationIntent = new Intent(this, NotificationPublisher.class);
         notificationIntent.putExtra("corps", corps);
         notificationIntent.putExtra("package", package_name);
+        notificationIntent.putExtra("timeDiff", timeDiff);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         long futureInMillis = SystemClock.elapsedRealtime() + delay;

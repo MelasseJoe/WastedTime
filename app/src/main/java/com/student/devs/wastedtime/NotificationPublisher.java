@@ -13,10 +13,15 @@ import android.support.v4.app.NotificationCompat;
 
 public class NotificationPublisher extends BroadcastReceiver {
 
+    Intent it;
+    Context ct;
 
     public void onReceive(Context context, Intent intent) {
         SharedPreferences preferences = context.getSharedPreferences("perso", Context.MODE_PRIVATE);
         String packageNamePresent = preferences.getString("packageNameStart","");
+
+        ct = context;
+        it = intent;
 
         if(!packageNamePresent.equals(intent.getStringExtra("package"))) {
             showNotification(context, "Notification", intent.getStringExtra("corps"), 1, intent, intent.getStringExtra("package"));
@@ -50,8 +55,8 @@ public class NotificationPublisher extends BroadcastReceiver {
         );*/
 
         Intent i = new Intent(context, question_activity.class);
-        i.putExtra("package", package_name);
-        i.putExtra("temps", );
+        i.putExtra("package", i.getStringExtra("package"));
+        i.putExtra("timeDiff", i.getLongExtra("timeDiff",-1));
 
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
                 i, PendingIntent.FLAG_UPDATE_CURRENT);
