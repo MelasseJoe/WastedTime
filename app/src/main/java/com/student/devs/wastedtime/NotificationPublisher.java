@@ -51,6 +51,7 @@ public class NotificationPublisher extends BroadcastReceiver {
 
         Intent i = new Intent(context, question_activity.class);
         i.putExtra("package", package_name);
+        i.putExtra("temps", );
 
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
                 i, PendingIntent.FLAG_UPDATE_CURRENT);
