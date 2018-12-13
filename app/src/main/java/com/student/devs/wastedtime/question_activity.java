@@ -10,8 +10,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -23,6 +25,8 @@ public class question_activity extends Activity {
     Drawable app_icon;
     TimePicker timePicker;
     AlertDialog.Builder adb;
+    AlertDialog alertDialog;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +84,11 @@ public class question_activity extends Activity {
                         finish();
                     }
                 });
-        adb.show();
+        //adb.show();
+
+        alertDialog = adb.create();
+        alertDialog.show();
+        alertDialog.getWindow().setLayout(950, 900); //Controlling width and height.
     }
 
 }

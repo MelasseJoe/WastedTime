@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.student.devs.wastedtime">
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"></uses-permission>
@@ -9,10 +10,11 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        tools:ignore="GoogleAppIndexingWarning">
 
         <activity
-            android:name=".question_activity"
+            android:name=".MainActivity"
             android:launchMode="singleInstance"
             android:exported="true">
             <intent-filter>
@@ -32,7 +34,7 @@
                 android:resource="@xml/windowchangedetectingservice" />
         </service>
 
-        <activity android:name=".MainActivity"/>
+        <activity android:name=".question_activity"/>
 
         <service android:name=".UpdateService"/>
         <receiver android:name=".PhoneLockedReceiver"/>

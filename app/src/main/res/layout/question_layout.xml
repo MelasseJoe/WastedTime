@@ -35,7 +35,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="      Choississez une durée      "
+        android:text="      Choisir une durée      "
         android:onClick="wastedTime"
         android:layout_gravity="center"
         android:layout_marginTop="50sp"
