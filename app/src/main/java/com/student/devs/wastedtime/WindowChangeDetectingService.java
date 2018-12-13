@@ -1,6 +1,8 @@
 package com.student.devs.wastedtime;
 
 import android.accessibilityservice.AccessibilityService;
+import android.app.AlarmManager;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -11,6 +13,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
@@ -21,8 +24,8 @@ import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CH
 
 public class WindowChangeDetectingService extends AccessibilityService {
 
-    int threshold_mediun = 20;
-    int threshold_min = 60;
+    int threshold_mediun = 5;
+    int threshold_min = 20;
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
@@ -106,7 +109,8 @@ public class WindowChangeDetectingService extends AccessibilityService {
 
                             if(timeDiff > threshold_min)
                             {
-                                showNotification(getApplicationContext(),"Notification","Combien de temps pensez vous avoir passer sur " + app_name + " ?",1,new Intent(), packageNameStart);
+                                scheduleNotification("Combien de temps pensez vous avoir passer sur " + app_name + " ?", (threshold_mediun-1)*1000, packageNameStart);
+                                //showNotification(getApplicationContext(),"Notification","Combien de temps pensez vous avoir passer sur " + app_name + " ?",1,new Intent(), packageNameStart);
                             }
                         }
                     }
@@ -149,6 +153,7 @@ public class WindowChangeDetectingService extends AccessibilityService {
 
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
         stackBuilder.addNextIntent(intent);
+
         /*PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(
                 0,
                 PendingIntent.FLAG_UPDATE_CURRENT
@@ -163,5 +168,17 @@ public class WindowChangeDetectingService extends AccessibilityService {
         mBuilder.setContentIntent(contentIntent);
         mBuilder.setAutoCancel(true);
         notificationManager.notify(notificationId, mBuilder.build());
+    }
+
+    private void scheduleNotification(String corps, int delay, String package_name) {
+
+        Intent notificationIntent = new Intent(this, NotificationPublisher.class);
+        notificationIntent.putExtra("corps", corps);
+        notificationIntent.putExtra("package", package_name);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        long futureInMillis = SystemClock.elapsedRealtime() + delay;
+        AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
     }
 }
