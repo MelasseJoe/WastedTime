@@ -14,7 +14,7 @@
     <string name="sharedprefs_key1">db4b8b18-e20b-4142-bafa-0f1980501ecd</string>
     <string name="sharedprefs_key2">37b297a6-4539-469f-bb5d-483bf4d7e5a0</string>
     <string name="sharedprefs_key3">cd0f1066-f058-4c12-8f00-fb76c20a7753</string>
-    <string name="usage">Before using this app, please allow access to Accessibility Service by clicking below:</string>
+    <string name="usage">Before using this app, please allow access to Accessibility Service by clicking below :</string>
     <string name="usage2">The switch in the action bar activates or not the use of toasts to display the current activity package.</string>
     <string name="usage3">Here you can try to launch an intent for the following package and class names. Default values open Huawei settings.</string>
 </resources>
