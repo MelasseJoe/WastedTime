@@ -49,7 +49,7 @@ public class MyBDD extends SQLiteOpenHelper
             Appli + " TEXT, " +
             Hour + " TEXT);";
 
-    public MyBDD(DialogInterface.OnClickListener context) {
+    public MyBDD(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 

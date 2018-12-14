@@ -89,7 +89,7 @@ public class question_activity extends Activity {
                         Toast.makeText(getApplicationContext(), "Vous pensez être resté " + hours +" heures " + minutes + " minutes sur " + app_name, Toast.LENGTH_LONG).show();
 
                         //Creation de la base de donnée
-                        MyBDD database = new MyBDD(this);
+                        MyBDD database = new MyBDD(getApplicationContext());
 
                         //Creation d'une humeur à partir de l'id de l'utilisateur et de son humeur
                         Application appli = new Application(app_name, readData("id_user"), (hours*60*60 + minutes*60  ), (int) i.getLongExtra("timeDiff",-1));

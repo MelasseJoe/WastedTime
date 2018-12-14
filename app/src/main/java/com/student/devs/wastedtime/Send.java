@@ -39,12 +39,12 @@ public class Send extends AsyncTask<String,String,String> {
             } else {
                 List<Application> tab_app = new ArrayList<>();
                 tab_app.addAll(myBDD.getApplications());
-                String query = "INSERT INTO HappyOrNotHappy(NAME, MOOD, DATE) VALUES";  //text
+                String query = "INSERT INTO Application(NAME, RealTime, EstimatedTime, Appli, Hour) VALUES";  //text
                 for(int i = 0; i < tab_app.size() - 1; i++)
                 {
                     query += "('" + tab_app.get(i).getUser() + "' , '" + tab_app.get(i).getRealTime() + "' , '" + tab_app.get(i).getEstimatedTime() + "' , '" + tab_app.get(i).getAppli() + "' , '"  + tab_app.get(i).getHeure() + "'),";  //text
                 }
-                query += "('" + tab_app.get(tab_app.size() - 1).getUser() + "' , '" + tab_app.get(tab_app.size() - 1).getRealTime() + "' , '" + tab_app.get(tab_app.size() - 1).getEstimatedTime() + "' , '" + tab_app.get(tab_app.size() - 1).getAppli() + "' , '"  + tab_app.get(tab_app.size() - 1).getHeure() + "'),";
+                query += "('" + tab_app.get(tab_app.size() - 1).getUser() + "' , '" + tab_app.get(tab_app.size() - 1).getRealTime() + "' , '" + tab_app.get(tab_app.size() - 1).getEstimatedTime() + "' , '" + tab_app.get(tab_app.size() - 1).getAppli() + "' , '"  + tab_app.get(tab_app.size() - 1).getHeure() + "');";
                 myBDD.deleteAll();
                 Log.d("ERROR", query);
                 Statement stmt = conn.createStatement();
