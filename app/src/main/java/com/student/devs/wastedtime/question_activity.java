@@ -20,6 +20,7 @@ import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.List;
 
 public class question_activity extends Activity {
 
@@ -64,12 +65,15 @@ public class question_activity extends Activity {
 
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     public void wastedTime(View v)
     {
         LayoutInflater factory = LayoutInflater.from(question_activity.this);
         final View alertDialogView = factory.inflate(R.layout.time_picker, null);
         timePicker = alertDialogView.findViewById(R.id.timePicker);
         timePicker.setIs24HourView(true);
+        timePicker.setHour(0);
+        timePicker.setMinute(0);
         //Création de l'AlertDialog
         adb = new AlertDialog.Builder(question_activity.this);
 
@@ -88,7 +92,7 @@ public class question_activity extends Activity {
                         MyBDD database = new MyBDD(getApplicationContext());
 
                         //Creation d'une humeur à partir de l'id de l'utilisateur et de son humeur
-                        Application appli = new Application(app_name, readData("id_user"), (hours*60*60 + minutes*60  ), (int) getIntent().getLongExtra("timeDiff",-1));
+                        Application appli = new Application(app_name, readData("id_user").substring(7), (hours*60 + minutes  ), (int) getIntent().getLongExtra("timeDiff",-1)/60);
 
                         //Ajout de l'humeur dans la base de donnée
                         database.addAppli(appli);
@@ -130,5 +134,7 @@ public class question_activity extends Activity {
         }
         return textFromFile;
     }
+
+   
 
 }

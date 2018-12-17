@@ -36,6 +36,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.List;
 
 public class MainActivity extends Activity {
 
@@ -49,7 +50,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_mainmoche);
 
         ActivityCompat.requestPermissions(this,
                 new String[]{
@@ -169,5 +170,14 @@ public class MainActivity extends Activity {
             }
         }
         return textFromFile;
+    }
+
+    public void TopN (View v)
+    {
+        MyBDD_Global myBDD_global = new MyBDD_Global(this);
+        List<Application> list = myBDD_global.getTopNApplications(3);
+        Log.d("TopN", "Appli = " + list.get(0).getAppli() + "  Time = " + list.get(0).getRealTime());
+        Log.d("TopN", "Appli = " + list.get(1).getAppli() + "  Time = " + list.get(1).getRealTime());
+        Log.d("TopN", "Appli = " + list.get(2).getAppli() + "  Time = " + list.get(2).getRealTime());
     }
 }

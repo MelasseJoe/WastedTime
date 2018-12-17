@@ -18,6 +18,10 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.Toast;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.Calendar;
 
 import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
@@ -46,6 +50,7 @@ public class WindowChangeDetectingService extends AccessibilityService {
             long timeStart = preferences.getLong("timeStart", -1);
             long timePrev = preferences.getLong("timePrev", -1);
             long currentTime = Calendar.getInstance().getTime().getTime();
+            MyBDD_Global myBDD_global = new MyBDD_Global(this);
 
             try {
                 app_name = (String)pm.getApplicationLabel(pm.getApplicationInfo(preferences.getString("packageNameStart", ""), PackageManager.GET_META_DATA));
@@ -94,6 +99,10 @@ public class WindowChangeDetectingService extends AccessibilityService {
                         Log.d("Debug", "else if");
                         Log.d("Debug", "packageNameStart   " + preferences.getString("packageNameStart",""));
                         Log.d("Debug", "packageNamePrev   " + preferences.getString("packageNamePrev",""));
+
+                        Application appli = new Application(app_name, readData("id_user").substring(7), 0, (int)timeDiff);
+
+                        myBDD_global.addAppli(appli);
                     }
                     else {
                         preferences.edit().putLong("timePrev", timeStart).apply();
@@ -106,6 +115,10 @@ public class WindowChangeDetectingService extends AccessibilityService {
                         // si ce n'est pas la première fois que l'utilisateur utilise WastedTime...
                         if (timeStart != -1){
                             Toast.makeText(this, "Vous êtes resté " + String.valueOf(timeDiff) + " secondes sur " + app_name, Toast.LENGTH_LONG).show();
+
+                            Application appli = new Application(app_name, readData("id_user").substring(7), 0, (int)timeDiff);
+
+                            myBDD_global.addAppli(appli);
 
                             if(timeDiff > threshold_min)
                             {
@@ -181,5 +194,30 @@ public class WindowChangeDetectingService extends AccessibilityService {
         long futureInMillis = SystemClock.elapsedRealtime() + delay;
         AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
         alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
+    }
+
+
+    public String readData(String file)
+    {
+        String textFromFile = "";
+        // Gets the file from the primary external storage space of the
+        // current application.
+        File testFile = new File(this.getExternalFilesDir(null), file + ".txt");
+        if (testFile != null) {
+            BufferedReader reader;
+            try {
+                reader = new BufferedReader(new FileReader(testFile));
+                String line;
+
+                while ((line = reader.readLine()) != null) {
+                    textFromFile += line.toString();
+                }
+                reader.close();
+            } catch (Exception e) {
+                Log.e("ReadWriteFile", "Unable to read the " + file + ".txt file.");
+                return "error";
+            }
+        }
+        return textFromFile;
     }
 }

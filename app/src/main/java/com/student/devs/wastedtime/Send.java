@@ -39,7 +39,7 @@ public class Send extends AsyncTask<String,String,String> {
             } else {
                 List<Application> tab_app = new ArrayList<>();
                 tab_app.addAll(myBDD.getApplications());
-                String query = "INSERT INTO Application(NAME, RealTime, EstimatedTime, Appli, Hour) VALUES";  //text
+                String query = "INSERT INTO Application(NAME, EstimatedTime, RealTime, Appli, Hour) VALUES";  //text
                 for(int i = 0; i < tab_app.size() - 1; i++)
                 {
                     query += "('" + tab_app.get(i).getUser() + "' , '" + tab_app.get(i).getRealTime() + "' , '" + tab_app.get(i).getEstimatedTime() + "' , '" + tab_app.get(i).getAppli() + "' , '"  + tab_app.get(i).getHeure() + "'),";  //text

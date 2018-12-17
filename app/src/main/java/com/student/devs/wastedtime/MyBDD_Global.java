@@ -3,20 +3,22 @@ package com.student.devs.wastedtime;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 
-
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 
-public class MyBDD extends SQLiteOpenHelper
+public class MyBDD_Global extends SQLiteOpenHelper
 {
-    private static final String DATABASE_NAME = "Applications";
+    private static final String DATABASE_NAME = "WastedTimed_Global";
 
     private static final int DATABASE_VERSION = 1;
 
@@ -24,7 +26,7 @@ public class MyBDD extends SQLiteOpenHelper
         return TABLE_Application;
     }
 
-    private static final String TABLE_Application = "Applications";
+    private static final String TABLE_Application = "WastedTimed_Global";
 
     private static final String ID = "ID";
     private static final String NAME = "user";
@@ -48,7 +50,7 @@ public class MyBDD extends SQLiteOpenHelper
             Appli + " TEXT, " +
             Hour + " TEXT);";
 
-    public MyBDD(Context context) {
+    public MyBDD_Global(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
@@ -59,7 +61,7 @@ public class MyBDD extends SQLiteOpenHelper
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        Log.w(MyBDD.class.getName(),
+        Log.w(MyBDD_Global.class.getName(),
                 "Upgrading database from version " + oldVersion + " to "
                         + newVersion + ", which will destroy all old data");
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_Application);
@@ -67,16 +69,48 @@ public class MyBDD extends SQLiteOpenHelper
     }
 
     public void addAppli(Application application){
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(NAME, application.getUser());
-        values.put(RealTime, application.getRealTime());
-        values.put(EstimatedTime, application.getEstimatedTime());
-        values.put(Appli, application.getAppli());
-        values.put(Hour, application.getHeure());
 
-        db.insert(TABLE_Application, null, values);
-        db.close();
+        List<Application> applicationList = getApplications();
+
+        int id = -1;
+
+        for(Application app : applicationList)
+        {
+            if(app.getAppli().equals(application.getAppli()))
+            {
+                id = app.getId();
+            }
+        }
+
+        if(id == -1)
+        {
+            SQLiteDatabase db = this.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put(NAME, application.getUser());
+            values.put(RealTime, application.getRealTime());
+            values.put(EstimatedTime, application.getEstimatedTime());
+            values.put(Appli, application.getAppli());
+            values.put(Hour, application.getHeure());
+
+            db.insert(TABLE_Application, null, values);
+            db.close();
+        }
+        else {
+            Application app = getApplication(id);
+
+            deleteAppli(app);
+
+            SQLiteDatabase db = this.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put(NAME, application.getUser());
+            values.put(RealTime, application.getRealTime() + app.getRealTime());
+            values.put(EstimatedTime, application.getEstimatedTime());
+            values.put(Appli, application.getAppli());
+            values.put(Hour, application.getHeure());
+
+            db.insert(TABLE_Application, null, values);
+            db.close();
+        }
     }
 
     public void deleteAppli(Application application) {
@@ -125,6 +159,33 @@ public class MyBDD extends SQLiteOpenHelper
         }
         db.close();
         return applicationList;
+    }
+
+    public List<Application> getTopNApplications(int n) {
+        List<Application> applicationList = new ArrayList<Application>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT * FROM " + TABLE_Application, null);
+        if (c.moveToFirst()) {
+            do {
+                Application application = new Application();
+                application.setId(c.getInt(c.getColumnIndex(ID)));
+                application.setAppli(c.getString(c.getColumnIndex(Appli)));
+                application.setEstimatedTime(c.getInt(c.getColumnIndex(EstimatedTime)));
+                application.setHeure(c.getString(c.getColumnIndex(Hour)));
+                application.setRealTime(c.getInt(c.getColumnIndex(RealTime)));
+                application.setUser(c.getString(c.getColumnIndex(NAME)));
+                applicationList.add(application);
+            } while (c.moveToNext());
+        }
+        db.close();
+        Comparator<Application> comparator = new Comparator<Application>() {
+            @Override
+            public int compare(Application left, Application right) {
+                return String.valueOf(left.getRealTime()).compareTo(String.valueOf(right.getRealTime()));
+            }
+        };
+        Collections.sort(applicationList, comparator);
+        return applicationList.subList(applicationList.size()-n,applicationList.size());
     }
 
     public int getApplicationCount() {
