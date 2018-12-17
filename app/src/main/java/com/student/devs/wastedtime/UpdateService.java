@@ -28,7 +28,7 @@ public class UpdateService extends Service {
     public void onCreate() {
         super.onCreate();
         // register receiver that handles screen on and screen off logic
-        Log.i("UpdateService", "Started");
+        Log.i("SCREEN", "Started");
         IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         filter.addAction(Intent.ACTION_ANSWER);
@@ -40,7 +40,10 @@ public class UpdateService extends Service {
     public void onDestroy() {
 
         unregisterReceiver(mReceiver);
-        Log.i("onDestroy Reciever", "Called");
+        Log.i("SCREEN", "Killed");
+        Intent broadcastIntent = new Intent(this, PhoneLockedReceiver.class);
+        broadcastIntent.putExtra("service", true);
+        startActivity(broadcastIntent);
         super.onDestroy();
     }
 
@@ -51,13 +54,13 @@ public class UpdateService extends Service {
         if (!screenOn) {
 
 
-            Log.i("screenON", "Called");
+            Log.i("SCREEN", "On");
             SharedPreferences preferences = getApplicationContext().getSharedPreferences("perso", Context.MODE_PRIVATE);
             preferences.edit().putBoolean("HaveBeenLocked",true).apply();
             Toast.makeText(getApplicationContext(), "Awake", Toast.LENGTH_LONG)
                     .show();
         } else {
-            Log.i("screenOFF", "Called");
+            Log.i("SCREEN", "Off");
         }
 
 

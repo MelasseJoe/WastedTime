@@ -1,5 +1,6 @@
 package com.student.devs.wastedtime;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.NotificationChannel;
@@ -16,6 +17,7 @@ import android.media.MediaScannerConnection;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.Menu;
@@ -48,8 +50,18 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        ActivityCompat.requestPermissions(this,
+                new String[]{
+                        Manifest.permission.RECEIVE_BOOT_COMPLETED,
+                        Manifest.permission.WAKE_LOCK,
+                        Manifest.permission.ACCESS_WIFI_STATE
+                },
+                1);
+
         //permet de détecter quand le téléphone est Locked ou unLocked
         startService(new Intent(MainActivity.this, UpdateService.class));
+
 
         synchroIdUser();
 
@@ -119,7 +131,7 @@ public class MainActivity extends Activity {
                 testFile.createNewFile();
 
             // Adds a line to the file
-            BufferedWriter writer = new BufferedWriter(new FileWriter(testFile, true /*append*/));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(testFile, false /*append*/));
             writer.write(data);
             writer.close();
             // Refresh the data so it can seen when the device is plugged in a
@@ -137,7 +149,7 @@ public class MainActivity extends Activity {
 
     public String readData(String file)
     {
-        String textFromFile = "error";
+        String textFromFile = "";
         // Gets the file from the primary external storage space of the
         // current application.
         File testFile = new File(this.getExternalFilesDir(null), file + ".txt");
@@ -149,12 +161,11 @@ public class MainActivity extends Activity {
 
                 while ((line = reader.readLine()) != null) {
                     textFromFile += line.toString();
-                    textFromFile += "\n";
                 }
                 reader.close();
             } catch (Exception e) {
                 Log.e("ReadWriteFile", "Unable to read the " + file + ".txt file.");
-                return textFromFile;
+                return "error";
             }
         }
         return textFromFile;

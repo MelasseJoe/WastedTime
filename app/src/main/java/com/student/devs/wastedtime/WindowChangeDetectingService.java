@@ -24,8 +24,8 @@ import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CH
 
 public class WindowChangeDetectingService extends AccessibilityService {
 
-    int threshold_mediun = 5;
-    int threshold_min = 20;
+    int threshold_mediun = 60;
+    int threshold_min = 10*60;
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {

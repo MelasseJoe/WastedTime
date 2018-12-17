@@ -9,15 +9,17 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
-import android.support.v7.app.AppCompatActivity;
-import android.view.ContextThemeWrapper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 
 public class question_activity extends Activity {
 
@@ -81,6 +83,20 @@ public class question_activity extends Activity {
                         int hours = timePicker.getHour();
                         int minutes = timePicker.getMinute();
                         Toast.makeText(getApplicationContext(), "Vous pensez être resté " + hours +" heures " + minutes + " minutes sur " + app_name, Toast.LENGTH_LONG).show();
+
+                        //Creation de la base de donnée
+                        MyBDD database = new MyBDD(getApplicationContext());
+
+                        //Creation d'une humeur à partir de l'id de l'utilisateur et de son humeur
+                        Application appli = new Application(app_name, readData("id_user"), (hours*60*60 + minutes*60  ), (int) getIntent().getLongExtra("timeDiff",-1));
+
+                        //Ajout de l'humeur dans la base de donnée
+                        database.addAppli(appli);
+
+                        //Envoi de l'humeur dans la base de donnée du serveur
+                        Send objSend = new Send();
+                        objSend.setMyBDD(database);
+                        objSend.execute("");
                         finish();
                     }
                 });
@@ -88,7 +104,31 @@ public class question_activity extends Activity {
 
         alertDialog = adb.create();
         alertDialog.show();
-        alertDialog.getWindow().setLayout(950, 900); //Controlling width and height.
+        //alertDialog.getWindow().setLayout(950, 900); //Controlling width and height.
+    }
+
+    public String readData(String file)
+    {
+        String textFromFile = "";
+        // Gets the file from the primary external storage space of the
+        // current application.
+        File testFile = new File(this.getExternalFilesDir(null), file + ".txt");
+        if (testFile != null) {
+            BufferedReader reader;
+            try {
+                reader = new BufferedReader(new FileReader(testFile));
+                String line;
+
+                while ((line = reader.readLine()) != null) {
+                    textFromFile += line.toString();
+                }
+                reader.close();
+            } catch (Exception e) {
+                Log.e("ReadWriteFile", "Unable to read the " + file + ".txt file.");
+                return "error";
+            }
+        }
+        return textFromFile;
     }
 
 }
