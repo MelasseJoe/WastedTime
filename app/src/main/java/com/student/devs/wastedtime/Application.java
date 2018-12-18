@@ -40,8 +40,8 @@ public class Application
     public Application(String mAppli, String mUser, int mEstimatedTime, int mRealTime) {
         this.id = 0;
         this.Appli = mAppli;
-        this.RealTime = mEstimatedTime;
-        this.EstimatedTime = mRealTime;
+        this.RealTime = mRealTime;
+        this.EstimatedTime = mEstimatedTime;
         this.heure = df.format(Calendar.getInstance().getTime());
         this.user = mUser;
     }

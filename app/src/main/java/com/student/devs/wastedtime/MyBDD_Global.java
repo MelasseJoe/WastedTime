@@ -181,11 +181,11 @@ public class MyBDD_Global extends SQLiteOpenHelper
         Comparator<Application> comparator = new Comparator<Application>() {
             @Override
             public int compare(Application left, Application right) {
-                return String.valueOf(left.getRealTime()).compareTo(String.valueOf(right.getRealTime()));
+                return right.getRealTime() - left.getRealTime();
             }
         };
         Collections.sort(applicationList, comparator);
-        return applicationList.subList(applicationList.size()-n,applicationList.size());
+        return applicationList.subList(0, n);
     }
 
     public int getApplicationCount() {

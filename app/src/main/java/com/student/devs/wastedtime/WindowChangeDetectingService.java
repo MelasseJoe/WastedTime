@@ -34,7 +34,6 @@ public class WindowChangeDetectingService extends AccessibilityService {
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
 
-
         boolean isServiceActive = Utils.getSharedPref(this, R.string.sharedprefs_key1, false);
         if (isServiceActive && event.getEventType() == TYPE_WINDOW_STATE_CHANGED) {
             ComponentName componentName = new ComponentName(event.getPackageName().toString(), event.getClassName().toString());
@@ -59,13 +58,16 @@ public class WindowChangeDetectingService extends AccessibilityService {
                 e.printStackTrace();
             }
 
+            Log.d("SCREEN", app_name);
+
             boolean isActivity = activityInfo != null;
             if (isActivity) {
 
                 //si le téléphone vient d'être déverouillé
-                if (preferences.getBoolean("HaveBeenLocked",false)){
+                if (preferences.getBoolean("SCREEN_ON",false) & preferences.getBoolean("SCREEN_OFF",false)){
 
-                    preferences.edit().putBoolean("HaveBeenLocked",false).apply();
+                    preferences.edit().putBoolean("SCREEN_ON",false).apply();
+                    preferences.edit().putBoolean("SCREEN_OFF",false).apply();
 
                     preferences.edit().putLong("timePrev", -1).apply();
                     preferences.edit().putString("packageNamePrev", "").apply();
@@ -75,8 +77,22 @@ public class WindowChangeDetectingService extends AccessibilityService {
                     Log.d("Debug", "Phone unLocked");
                 }
 
+                //si le téléphone vient d'être déverouillé
+                if (preferences.getBoolean("SCREEN_OFF",false)){
+
+                    preferences.edit().putBoolean("HaveBeenLocked",false).apply();
+
+                    long timeDiff = (currentTime - timeStart) / 1000 ;
+
+                    if(timeDiff > threshold_min) {
+                        showNotification(this, "Notification", "Combien de temps pensez vous avoir passer sur " + app_name + " ?", 1);
+                    }
+
+                    Log.d("Debug", "Phone unLocked");
+                }
+
                 //si l'activity que l'on vient d'ouvrir n'appartient pas à la même appli que l'appli précédente
-                if(!packageNamePresent.equals(packageNameStart)) {
+                if(!packageNamePresent.equals(packageNameStart) & (preferences.getBoolean("SCREEN_OFF",false) == preferences.getBoolean("SCREEN_OFF",false))){
 
                     long timeDiff = (currentTime - timeStart) / 1000 ;
 
@@ -130,6 +146,36 @@ public class WindowChangeDetectingService extends AccessibilityService {
                 }
             }
         }
+    }
+
+    public void showNotification(Context context, String title, String body, int notificationId) {
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        String channelId = "channel-01";
+        String channelName = "Channel Name";
+        int importance = NotificationManager.IMPORTANCE_HIGH;
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationChannel mChannel = new NotificationChannel(
+                    channelId, channelName, importance);
+            notificationManager.createNotificationChannel(mChannel);
+        }
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, channelId)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(title)
+                .setContentText(body);
+
+        Intent i = new Intent(context, question_activity.class);
+        i.putExtra("package", i.getStringExtra("package"));
+        i.putExtra("timeDiff", i.getLongExtra("timeDiff",-1));
+
+        PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
+                i, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        mBuilder.setContentIntent(contentIntent);
+        mBuilder.setAutoCancel(true);
+        notificationManager.notify(notificationId, mBuilder.build());
     }
 
     @Override

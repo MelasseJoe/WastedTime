@@ -40,10 +40,6 @@ import java.util.List;
 
 public class MainActivity extends Activity {
 
-    public static final String TAG = MainActivity.class.getSimpleName();
-
-    private EditText mEditPackage;
-    private EditText mEditClass;
     private Switch mSwitch;
     private String id_user;
 
@@ -174,10 +170,40 @@ public class MainActivity extends Activity {
 
     public void TopN (View v)
     {
-        MyBDD_Global myBDD_global = new MyBDD_Global(this);
-        List<Application> list = myBDD_global.getTopNApplications(3);
-        Log.d("TopN", "Appli = " + list.get(0).getAppli() + "  Time = " + list.get(0).getRealTime());
-        Log.d("TopN", "Appli = " + list.get(1).getAppli() + "  Time = " + list.get(1).getRealTime());
-        Log.d("TopN", "Appli = " + list.get(2).getAppli() + "  Time = " + list.get(2).getRealTime());
+        //showNotification(getApplicationContext(), "Notification","Entrer votre temps sur les application qui suivent", 2);
+    }
+
+    public void showNotification(Context context, String title, String body, int notificationId) {
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        String channelId = "channel-01";
+        String channelName = "Channel Name";
+        int importance = NotificationManager.IMPORTANCE_HIGH;
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationChannel mChannel = new NotificationChannel(
+                    channelId, channelName, importance);
+            notificationManager.createNotificationChannel(mChannel);
+        }
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, channelId)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(title)
+                .setContentText(body);
+
+        /*PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(
+                0,
+                PendingIntent.FLAG_UPDATE_CURRENT
+        );*/
+
+        Intent i = new Intent(context, question_activity.class);
+        i.putExtra("Top3", true);
+
+        PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
+                i, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        mBuilder.setContentIntent(contentIntent);
+        mBuilder.setAutoCancel(true);
+        notificationManager.notify(notificationId, mBuilder.build());
     }
 }

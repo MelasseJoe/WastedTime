@@ -18,6 +18,7 @@ public class Send extends AsyncTask<String,String,String> {
     private static final String USER = "wastedtime";
     private static final String PASS = "Proj92!emi";
     private static MyBDD myBDD;
+    private static MyBDD_Global myBDD_global;
 
     @Override
     protected void onPreExecute() {}
@@ -25,6 +26,11 @@ public class Send extends AsyncTask<String,String,String> {
     public static void setMyBDD(MyBDD myBDD_)
     {
         myBDD = myBDD_;
+    }
+
+    public static void setMyBDD_Global(MyBDD_Global myBDD_global_)
+    {
+        myBDD_global = myBDD_global_;
     }
 
     @Override
@@ -37,18 +43,32 @@ public class Send extends AsyncTask<String,String,String> {
                 //TODO//On a pas de connection internet ou l'envoi n'a pas marché
                 Log.d("ERROR", "Pas de connection internet");
             } else {
-                List<Application> tab_app = new ArrayList<>();
-                tab_app.addAll(myBDD.getApplications());
-                String query = "INSERT INTO Application(NAME, EstimatedTime, RealTime, Appli, Hour) VALUES";  //text
-                for(int i = 0; i < tab_app.size() - 1; i++)
-                {
-                    query += "('" + tab_app.get(i).getUser() + "' , '" + tab_app.get(i).getRealTime() + "' , '" + tab_app.get(i).getEstimatedTime() + "' , '" + tab_app.get(i).getAppli() + "' , '"  + tab_app.get(i).getHeure() + "'),";  //text
+                if(strings[0].equals("a")) {
+                    List<Application> tab_app = new ArrayList<>();
+                    tab_app.addAll(myBDD.getApplications());
+                    String query = "INSERT INTO Application(NAME, EstimatedTime, RealTime, Appli, Hour) VALUES";  //text
+                    for (int i = 0; i < tab_app.size() - 1; i++) {
+                        query += "('" + tab_app.get(i).getUser() + "' , '" + tab_app.get(i).getRealTime() + "' , '" + tab_app.get(i).getEstimatedTime() + "' , '" + tab_app.get(i).getAppli() + "' , '" + tab_app.get(i).getHeure() + "'),";  //text
+                    }
+                    query += "('" + tab_app.get(tab_app.size() - 1).getUser() + "' , '" + tab_app.get(tab_app.size() - 1).getRealTime() + "' , '" + tab_app.get(tab_app.size() - 1).getEstimatedTime() + "' , '" + tab_app.get(tab_app.size() - 1).getAppli() + "' , '" + tab_app.get(tab_app.size() - 1).getHeure() + "');";
+                    myBDD.deleteAll();
+                    Log.d("ERROR", query);
+                    Statement stmt = conn.createStatement();
+                    stmt.execute(query);
                 }
-                query += "('" + tab_app.get(tab_app.size() - 1).getUser() + "' , '" + tab_app.get(tab_app.size() - 1).getRealTime() + "' , '" + tab_app.get(tab_app.size() - 1).getEstimatedTime() + "' , '" + tab_app.get(tab_app.size() - 1).getAppli() + "' , '"  + tab_app.get(tab_app.size() - 1).getHeure() + "');";
-                myBDD.deleteAll();
-                Log.d("ERROR", query);
-                Statement stmt = conn.createStatement();
-                stmt.execute(query);
+                else{
+                    List<Application> tab_app = new ArrayList<>();
+                    tab_app.addAll(myBDD.getApplications());
+                    String query = "INSERT INTO Application(NAME, EstimatedTime_" + strings[0] + ", RealTime_" + strings[0] + ", Appli_" + strings[0] + ", Hour) VALUES";  //text
+                    for (int i = 0; i < tab_app.size() - 1; i++) {
+                        query += "('" + tab_app.get(i).getUser() + "' , '" + tab_app.get(i).getRealTime() + "' , '" + tab_app.get(i).getEstimatedTime() + "' , '" + tab_app.get(i).getAppli() + "' , '" + tab_app.get(i).getHeure() + "'),";  //text
+                    }
+                    query += "('" + tab_app.get(tab_app.size() - 1).getUser() + "' , '" + tab_app.get(tab_app.size() - 1).getRealTime() + "' , '" + tab_app.get(tab_app.size() - 1).getEstimatedTime() + "' , '" + tab_app.get(tab_app.size() - 1).getAppli() + "' , '" + tab_app.get(tab_app.size() - 1).getHeure() + "');";
+                    myBDD.deleteAll();
+                    Log.d("ERROR", query);
+                    Statement stmt = conn.createStatement();
+                    stmt.execute(query);
+                }
 
             }
             assert conn != null;

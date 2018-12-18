@@ -29,7 +29,9 @@ public class question_activity extends Activity {
     TimePicker timePicker;
     AlertDialog.Builder adb;
     AlertDialog alertDialog;
-
+    int count;
+    List<Application> listApp;
+    MyBDD_Global myBDD_global;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,32 +39,43 @@ public class question_activity extends Activity {
         setContentView(R.layout.question_layout);
 
         Intent i = getIntent();
-        String package_name = i.getStringExtra("package");
-        PackageManager pm = getPackageManager();
+        count = 4;
 
-        try {
-            app_name = (String)pm.getApplicationLabel(pm.getApplicationInfo(package_name, PackageManager.GET_META_DATA));
-        } catch (PackageManager.NameNotFoundException e) {
-            app_name = "No Activity Name";
-            e.printStackTrace();
-        }
-
-        try
+        if(i.getBooleanExtra("Top3",false))
         {
-            app_icon = getPackageManager().getApplicationIcon(package_name);
+            count = 0;
+            myBDD_global = new MyBDD_Global(this);
+            listApp = myBDD_global.getTopNApplications(3);
+
+            app_name = listApp.get(count).getAppli();
+
+            TextView textView = findViewById(R.id.name_app);
+            textView.setText(app_name);
         }
-        catch (PackageManager.NameNotFoundException e)
-        {
-            app_icon = getDrawable(R.drawable.no_image);
-            e.printStackTrace();
+        else {
+            String package_name = i.getStringExtra("package");
+            PackageManager pm = getPackageManager();
+
+            try {
+                app_name = (String) pm.getApplicationLabel(pm.getApplicationInfo(package_name, PackageManager.GET_META_DATA));
+            } catch (PackageManager.NameNotFoundException e) {
+                app_name = "No Activity Name";
+                e.printStackTrace();
+            }
+
+            try {
+                app_icon = getPackageManager().getApplicationIcon(package_name);
+            } catch (PackageManager.NameNotFoundException e) {
+                app_icon = getDrawable(R.drawable.no_image);
+                e.printStackTrace();
+            }
+
+            ImageView imageView = findViewById(R.id.icon_app);
+            TextView textView = findViewById(R.id.name_app);
+
+            imageView.setBackground(app_icon);
+            textView.setText(app_name);
         }
-
-        ImageView imageView = findViewById(R.id.icon_app);
-        TextView textView = findViewById(R.id.name_app);
-
-        imageView.setBackground(app_icon);
-        textView.setText(app_name);
-
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -83,25 +96,38 @@ public class question_activity extends Activity {
         adb.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @RequiresApi(api = Build.VERSION_CODES.M)
                     public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
-                        int hours = timePicker.getHour();
-                        int minutes = timePicker.getMinute();
-                        Toast.makeText(getApplicationContext(), "Vous pensez être resté " + hours +" heures " + minutes + " minutes sur " + app_name, Toast.LENGTH_LONG).show();
+                        if(count < 3) {
+                            dialog.cancel();
+                            int hours = timePicker.getHour();
+                            int minutes = timePicker.getMinute();
+                            Toast.makeText(getApplicationContext(), "Vous pensez être resté " + hours + " heures " + minutes + " minutes sur " + myBDD_global.getApplication(count).getAppli(), Toast.LENGTH_LONG).show();
 
-                        //Creation de la base de donnée
-                        MyBDD database = new MyBDD(getApplicationContext());
+                            //Envoi de l'humeur dans la base de donnée du serveur
+                            Send objSend = new Send();
+                            objSend.setMyBDD_Global(myBDD_global);
+                            objSend.execute(String.valueOf(count));
+                        }
+                        else {
+                            dialog.cancel();
+                            int hours = timePicker.getHour();
+                            int minutes = timePicker.getMinute();
+                            Toast.makeText(getApplicationContext(), "Vous pensez être resté " + hours + " heures " + minutes + " minutes sur " + app_name, Toast.LENGTH_LONG).show();
 
-                        //Creation d'une humeur à partir de l'id de l'utilisateur et de son humeur
-                        Application appli = new Application(app_name, readData("id_user").substring(7), (hours*60 + minutes  ), (int) getIntent().getLongExtra("timeDiff",-1)/60);
+                            //Creation de la base de donnée
+                            MyBDD database = new MyBDD(getApplicationContext());
 
-                        //Ajout de l'humeur dans la base de donnée
-                        database.addAppli(appli);
+                            //Creation d'une humeur à partir de l'id de l'utilisateur et de son humeur
+                            Application appli = new Application(app_name, readData("id_user").substring(7), (hours * 60 + minutes), (int) getIntent().getLongExtra("timeDiff", -1) / 60);
 
-                        //Envoi de l'humeur dans la base de donnée du serveur
-                        Send objSend = new Send();
-                        objSend.setMyBDD(database);
-                        objSend.execute("");
-                        finish();
+                            //Ajout de l'humeur dans la base de donnée
+                            database.addAppli(appli);
+
+                            //Envoi de l'humeur dans la base de donnée du serveur
+                            Send objSend = new Send();
+                            objSend.setMyBDD(database);
+                            objSend.execute("a");
+                            finish();
+                        }
                     }
                 });
         //adb.show();

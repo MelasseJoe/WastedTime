@@ -29,8 +29,8 @@ public class UpdateService extends Service {
         super.onCreate();
         // register receiver that handles screen on and screen off logic
         Log.i("SCREEN", "Started");
-        IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
-        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_OFF);
+        filter.addAction(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_ANSWER);
         mReceiver = new PhoneLockedReceiver();
         registerReceiver(mReceiver, filter);
@@ -49,21 +49,6 @@ public class UpdateService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        // TODO Auto-generated method stub
-        boolean screenOn = intent.getBooleanExtra("screen_state", false);
-        if (!screenOn) {
-
-
-            Log.i("SCREEN", "On");
-            SharedPreferences preferences = getApplicationContext().getSharedPreferences("perso", Context.MODE_PRIVATE);
-            preferences.edit().putBoolean("HaveBeenLocked",true).apply();
-            Toast.makeText(getApplicationContext(), "Awake", Toast.LENGTH_LONG)
-                    .show();
-        } else {
-            Log.i("SCREEN", "Off");
-        }
-
-
         return START_STICKY;
     }
     @Override
