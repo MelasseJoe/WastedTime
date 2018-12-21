@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 public class NotificationPublisher extends BroadcastReceiver {
 
@@ -22,6 +23,8 @@ public class NotificationPublisher extends BroadcastReceiver {
 
         ct = context;
         it = intent;
+
+        Log.d("PackageDebug", "Notification publisher : " + it.getStringExtra("package"));
 
         if(!packageNamePresent.equals(intent.getStringExtra("package"))) {
             showNotification(context, "Notification", intent.getStringExtra("corps"), 1, intent, intent.getStringExtra("package"));
@@ -55,8 +58,11 @@ public class NotificationPublisher extends BroadcastReceiver {
         );*/
 
         Intent i = new Intent(context, question_activity.class);
-        i.putExtra("package", i.getStringExtra("package"));
-        i.putExtra("timeDiff", i.getLongExtra("timeDiff",-1));
+        i.putExtra("package", intent.getStringExtra("package"));
+
+        Log.d("timeDiff", "send " + String.valueOf(intent.getLongExtra("timeDiff",-1)));
+
+        i.putExtra("timeDiff", intent.getLongExtra("timeDiff",-1));
 
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
                 i, PendingIntent.FLAG_UPDATE_CURRENT);

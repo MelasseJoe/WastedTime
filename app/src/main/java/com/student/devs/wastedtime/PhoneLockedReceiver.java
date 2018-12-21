@@ -35,6 +35,8 @@ public class PhoneLockedReceiver extends BroadcastReceiver {
 
             SharedPreferences preferences = ct.getSharedPreferences("perso", Context.MODE_PRIVATE);
             preferences.edit().putBoolean("SCREEN_ON",true).apply();
+
+            announceForAccessibilityCompat();
         } else if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
             Log.d("SCREEN", "SCREEN OFF");
 

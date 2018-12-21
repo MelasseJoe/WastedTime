@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Debug;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -30,52 +31,41 @@ public class question_activity extends Activity {
     AlertDialog.Builder adb;
     AlertDialog alertDialog;
     int count;
-    List<Application> listApp;
     MyBDD_Global myBDD_global;
+    Intent i;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.question_layout);
 
-        Intent i = getIntent();
-        count = 4;
+        i = getIntent();
 
-        if(i.getBooleanExtra("Top3",false))
-        {
-            count = 0;
-            myBDD_global = new MyBDD_Global(this);
-            listApp = myBDD_global.getTopNApplications(3);
+        Log.d("PackageDebug", "Question Activity : " + i.getStringExtra("package"));
 
-            app_name = listApp.get(count).getAppli();
+        String package_name = i.getStringExtra("package");
+        PackageManager pm = getPackageManager();
 
-            TextView textView = findViewById(R.id.name_app);
-            textView.setText(app_name);
+        try {
+            app_name = (String) pm.getApplicationLabel(pm.getApplicationInfo(package_name, PackageManager.GET_META_DATA));
+        } catch (PackageManager.NameNotFoundException e) {
+            app_name = "No Activity Name";
+            e.printStackTrace();
         }
-        else {
-            String package_name = i.getStringExtra("package");
-            PackageManager pm = getPackageManager();
 
-            try {
-                app_name = (String) pm.getApplicationLabel(pm.getApplicationInfo(package_name, PackageManager.GET_META_DATA));
-            } catch (PackageManager.NameNotFoundException e) {
-                app_name = "No Activity Name";
-                e.printStackTrace();
-            }
-
-            try {
-                app_icon = getPackageManager().getApplicationIcon(package_name);
-            } catch (PackageManager.NameNotFoundException e) {
-                app_icon = getDrawable(R.drawable.no_image);
-                e.printStackTrace();
-            }
-
-            ImageView imageView = findViewById(R.id.icon_app);
-            TextView textView = findViewById(R.id.name_app);
-
-            imageView.setBackground(app_icon);
-            textView.setText(app_name);
+        try {
+            app_icon = getPackageManager().getApplicationIcon(package_name);
+        } catch (PackageManager.NameNotFoundException e) {
+            app_icon = getDrawable(R.drawable.no_image);
+            e.printStackTrace();
         }
+
+        ImageView imageView = findViewById(R.id.icon_app);
+        TextView textView = findViewById(R.id.name_app);
+
+        imageView.setBackground(app_icon);
+        textView.setText(app_name);
+
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -94,42 +84,33 @@ public class question_activity extends Activity {
         adb.setView(alertDialogView);
 
         adb.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @RequiresApi(api = Build.VERSION_CODES.M)
-                    public void onClick(DialogInterface dialog, int id) {
-                        if(count < 3) {
-                            dialog.cancel();
-                            int hours = timePicker.getHour();
-                            int minutes = timePicker.getMinute();
-                            Toast.makeText(getApplicationContext(), "Vous pensez être resté " + hours + " heures " + minutes + " minutes sur " + myBDD_global.getApplication(count).getAppli(), Toast.LENGTH_LONG).show();
+            @RequiresApi(api = Build.VERSION_CODES.M)
+            public void onClick(DialogInterface dialog, int id) {
+                int hours = timePicker.getHour();
+                int minutes = timePicker.getMinute();
+                Toast.makeText(getApplicationContext(), "Vous pensez être resté " + hours + " heures " + minutes + " minutes sur " + app_name, Toast.LENGTH_LONG).show();
 
-                            //Envoi de l'humeur dans la base de donnée du serveur
-                            Send objSend = new Send();
-                            objSend.setMyBDD_Global(myBDD_global);
-                            objSend.execute(String.valueOf(count));
-                        }
-                        else {
-                            dialog.cancel();
-                            int hours = timePicker.getHour();
-                            int minutes = timePicker.getMinute();
-                            Toast.makeText(getApplicationContext(), "Vous pensez être resté " + hours + " heures " + minutes + " minutes sur " + app_name, Toast.LENGTH_LONG).show();
+                //Creation de la base de donnée
+                MyBDD database = new MyBDD(getApplicationContext());
 
-                            //Creation de la base de donnée
-                            MyBDD database = new MyBDD(getApplicationContext());
+                Log.d("timeDiff", "send   " + String.valueOf(getIntent().getLongExtra("timeDiff",-1)));
 
-                            //Creation d'une humeur à partir de l'id de l'utilisateur et de son humeur
-                            Application appli = new Application(app_name, readData("id_user").substring(7), (hours * 60 + minutes), (int) getIntent().getLongExtra("timeDiff", -1) / 60);
+                //Creation d'une humeur à partir de l'id de l'utilisateur et de son humeur
+                Application appli = new Application(app_name.toUpperCase(), readData("id_user").substring(7), (hours * 60 * 60 + minutes * 60), (int) getIntent().getLongExtra("timeDiff", -1));
 
-                            //Ajout de l'humeur dans la base de donnée
-                            database.addAppli(appli);
+                //Ajout de l'humeur dans la base de donnée
+                database.addAppli(appli);
 
-                            //Envoi de l'humeur dans la base de donnée du serveur
-                            Send objSend = new Send();
-                            objSend.setMyBDD(database);
-                            objSend.execute("a");
-                            finish();
-                        }
-                    }
-                });
+                //Envoi de l'humeur dans la base de donnée du serveur
+                Send objSend = new Send();
+                objSend.setMyBDD(database);
+                objSend.execute("");
+
+                dialog.cancel();
+                finish();
+            }
+
+        });
         //adb.show();
 
         alertDialog = adb.create();
@@ -161,6 +142,6 @@ public class question_activity extends Activity {
         return textFromFile;
     }
 
-   
+
 
 }

@@ -28,8 +28,8 @@ import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CH
 
 public class WindowChangeDetectingService extends AccessibilityService {
 
-    int threshold_mediun = 60;
-    int threshold_min = 10*60;
+    int threshold_mediun = 5;
+    int threshold_min = 15;
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
@@ -80,9 +80,9 @@ public class WindowChangeDetectingService extends AccessibilityService {
                 //si le téléphone vient d'être déverouillé
                 if (preferences.getBoolean("SCREEN_OFF",false)){
 
-                    preferences.edit().putBoolean("HaveBeenLocked",false).apply();
-
                     long timeDiff = (currentTime - timeStart) / 1000 ;
+
+                    Log.d("timeDiff", "send" + String.valueOf(timeDiff));
 
                     if(timeDiff > threshold_min) {
                         showNotification(this, "Notification", "Combien de temps pensez vous avoir passer sur " + app_name + " ?", 1);
@@ -92,7 +92,7 @@ public class WindowChangeDetectingService extends AccessibilityService {
                 }
 
                 //si l'activity que l'on vient d'ouvrir n'appartient pas à la même appli que l'appli précédente
-                if(!packageNamePresent.equals(packageNameStart) & (preferences.getBoolean("SCREEN_OFF",false) == preferences.getBoolean("SCREEN_OFF",false))){
+                if(!packageNamePresent.equals(packageNameStart) & (preferences.getBoolean("SCREEN_ON",false) == preferences.getBoolean("SCREEN_OFF",false))){
 
                     long timeDiff = (currentTime - timeStart) / 1000 ;
 
@@ -138,6 +138,8 @@ public class WindowChangeDetectingService extends AccessibilityService {
 
                             if(timeDiff > threshold_min)
                             {
+                                Log.d("timeDiff", "A envoyer" +  String.valueOf(timeDiff));
+
                                 scheduleNotification("Combien de temps pensez vous avoir passer sur " + app_name + " ?", (threshold_mediun-1)*1000, packageNameStart, timeDiff);
                                 //showNotification(getApplicationContext(),"Notification","Combien de temps pensez vous avoir passer sur " + app_name + " ?",1,new Intent(), packageNameStart);
                             }
@@ -231,6 +233,8 @@ public class WindowChangeDetectingService extends AccessibilityService {
 
     private void scheduleNotification(String corps, int delay, String package_name, long timeDiff) {
 
+        Log.d("timeDiff", "send" + String.valueOf(timeDiff));
+
         Intent notificationIntent = new Intent(this, NotificationPublisher.class);
         notificationIntent.putExtra("corps", corps);
         notificationIntent.putExtra("package", package_name);
@@ -241,7 +245,6 @@ public class WindowChangeDetectingService extends AccessibilityService {
         AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
         alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
     }
-
 
     public String readData(String file)
     {
