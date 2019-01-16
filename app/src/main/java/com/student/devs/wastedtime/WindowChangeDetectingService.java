@@ -28,8 +28,9 @@ import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CH
 
 public class WindowChangeDetectingService extends AccessibilityService {
 
-    int threshold_mediun = 5;
-    int threshold_min = 15;
+    //TODO// Variable à changer pour les deux seuils de l'application
+    private final int threshold_mediun = 1 * 60; //Temps maximum passer entre 2 applications (secondes)
+    private final int threshold_min = 15 * 60; //Temps minimum à passer sur une application pour recevoir une notification (secondes)
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
@@ -57,39 +58,36 @@ public class WindowChangeDetectingService extends AccessibilityService {
                 app_name = preferences.getString("packageNameStart", "");
                 e.printStackTrace();
             }
+            //si le téléphone vient d'être déverouillé
+            if (preferences.getBoolean("SCREEN_ON",false) && preferences.getBoolean("SCREEN_OFF",false)){
 
-            Log.d("SCREEN", app_name);
+                preferences.edit().putBoolean("SCREEN_ON",false).apply();
+                preferences.edit().putBoolean("SCREEN_OFF",false).apply();
+
+                preferences.edit().putLong("timePrev", -1).apply();
+                preferences.edit().putString("packageNamePrev", "").apply();
+                preferences.edit().putLong("timeStart", currentTime).apply();
+                preferences.edit().putString("packageNameStart", packageNamePresent).apply();
+
+                Log.d("Debug", "Phone unLocked");
+            }
+            //si le téléphone vient d'être verouillé
+            else if (preferences.getBoolean("SCREEN_OFF",false)){
+
+                long timeDiff = (currentTime - timeStart) / 1000 ;
+
+                Log.d("timeDiff", "send " + String.valueOf(timeDiff));
+
+                if(timeDiff > threshold_min) {
+                    Log.d("SCREEN", app_name);
+                    showNotification(getApplicationContext(), "Notification", "Combien de temps pensez vous avoir passer sur " + app_name + " ?", 1, packageNameStart, timeDiff);
+                }
+
+                Log.d("Debug", "Phone unLocked");
+            }
 
             boolean isActivity = activityInfo != null;
             if (isActivity) {
-
-                //si le téléphone vient d'être déverouillé
-                if (preferences.getBoolean("SCREEN_ON",false) & preferences.getBoolean("SCREEN_OFF",false)){
-
-                    preferences.edit().putBoolean("SCREEN_ON",false).apply();
-                    preferences.edit().putBoolean("SCREEN_OFF",false).apply();
-
-                    preferences.edit().putLong("timePrev", -1).apply();
-                    preferences.edit().putString("packageNamePrev", "").apply();
-                    preferences.edit().putLong("timeStart", currentTime).apply();
-                    preferences.edit().putString("packageNameStart", packageNamePresent).apply();
-
-                    Log.d("Debug", "Phone unLocked");
-                }
-
-                //si le téléphone vient d'être déverouillé
-                if (preferences.getBoolean("SCREEN_OFF",false)){
-
-                    long timeDiff = (currentTime - timeStart) / 1000 ;
-
-                    Log.d("timeDiff", "send" + String.valueOf(timeDiff));
-
-                    if(timeDiff > threshold_min) {
-                        showNotification(this, "Notification", "Combien de temps pensez vous avoir passer sur " + app_name + " ?", 1);
-                    }
-
-                    Log.d("Debug", "Phone unLocked");
-                }
 
                 //si l'activity que l'on vient d'ouvrir n'appartient pas à la même appli que l'appli précédente
                 if(!packageNamePresent.equals(packageNameStart) & (preferences.getBoolean("SCREEN_ON",false) == preferences.getBoolean("SCREEN_OFF",false))){
@@ -150,7 +148,7 @@ public class WindowChangeDetectingService extends AccessibilityService {
         }
     }
 
-    public void showNotification(Context context, String title, String body, int notificationId) {
+    public void showNotification(Context context, String title, String body, int notificationId, String package_, long time_) {
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         String channelId = "channel-01";
@@ -169,8 +167,8 @@ public class WindowChangeDetectingService extends AccessibilityService {
                 .setContentText(body);
 
         Intent i = new Intent(context, question_activity.class);
-        i.putExtra("package", i.getStringExtra("package"));
-        i.putExtra("timeDiff", i.getLongExtra("timeDiff",-1));
+        i.putExtra("package", package_);
+        i.putExtra("timeDiff", time_);
 
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
                 i, PendingIntent.FLAG_UPDATE_CURRENT);
