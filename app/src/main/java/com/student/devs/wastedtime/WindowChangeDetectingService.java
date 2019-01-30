@@ -29,8 +29,8 @@ import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CH
 public class WindowChangeDetectingService extends AccessibilityService {
 
     //TODO// Variable à changer pour les deux seuils de l'application
-    private final int threshold_mediun = 1 * 60; //Temps maximum passer entre 2 applications (secondes)
-    private final int threshold_min = 15 * 60; //Temps minimum à passer sur une application pour recevoir une notification (secondes)
+    private final int threshold_mediun = 10; //Temps maximum passer entre 2 applications (secondes)
+    private final int threshold_min = 30; //Temps minimum à passer sur une application pour recevoir une notification (secondes)
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {

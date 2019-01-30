@@ -3,6 +3,7 @@ package com.student.devs.wastedtime;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -20,10 +21,15 @@ import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,6 +41,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -58,7 +65,6 @@ public class MainActivity extends Activity {
 
         //permet de détecter quand le téléphone est Locked ou unLocked
         startService(new Intent(MainActivity.this, UpdateService.class));
-
 
         synchroIdUser();
 
@@ -93,11 +99,49 @@ public class MainActivity extends Activity {
         startActivity(intent);
     }
 
+    RadioButton m;
+    RadioButton f;
+    Button save;
+    Spinner year;
+    AlertDialog alertDialog;
+    View dialogView;
 
     @Override
     public void onDestroy() {
         //showNotification(getApplicationContext(),"Attention !","Vous venez de fermer \" WastedTime\"",1,new Intent());
         super.onDestroy();
+    }
+
+    public void saveas(View v)
+    {
+        m = dialogView.findViewById(R.id.male);
+        f = dialogView.findViewById(R.id.female);
+
+        String genre;
+        String year_selected;
+
+        if(m.isChecked())
+        {
+            genre = "m";
+        }
+        else if (f.isChecked())
+        {
+            genre = "f";
+        }
+        else
+        {
+            alertDialog.show();
+            return;
+        }
+
+        year_selected = (String) year.getSelectedItem();
+
+        Calendar calendar = Calendar.getInstance();
+        id_user = String.valueOf(calendar.getTimeInMillis());
+
+        writeData("id_user", id_user.substring(6,12) + genre + year_selected);
+
+        alertDialog.cancel();
     }
 
     public void synchroIdUser()
@@ -106,10 +150,27 @@ public class MainActivity extends Activity {
 
         if(id.equals("error"))
         {
-            Calendar calendar = Calendar.getInstance();
-            id_user = String.valueOf(calendar.getTimeInMillis());
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+// ...Irrelevant code for customizing the buttons and title
+            LayoutInflater inflater = this.getLayoutInflater();
+            dialogView = inflater.inflate(R.layout.alert_dialog, null);
+            dialogBuilder.setView(dialogView);
 
-            writeData("id_user", id_user);
+            year = dialogView.findViewById(R.id.year);
+
+            ArrayList<String> listYear = new ArrayList<String>();
+
+            for (int i = Calendar.getInstance().get(Calendar.YEAR); i > Calendar.getInstance().get(Calendar.YEAR) - 100; i--)
+            {
+                listYear.add(String.valueOf(i));
+            }
+
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, listYear);
+
+            year.setAdapter(adapter);
+
+            alertDialog = dialogBuilder.create();
+            alertDialog.show();
         }
         else
         {

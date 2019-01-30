@@ -96,12 +96,12 @@ public class question_activity extends Activity {
                 Log.d("timeDiff", "send   " + String.valueOf(getIntent().getLongExtra("timeDiff",-1)));
 
                 //Creation d'une humeur à partir de l'id de l'utilisateur et de son humeur
-                Application appli = new Application(app_name.toUpperCase(), readData("id_user").substring(7), (hours * 60 * 60 + minutes * 60), (int) getIntent().getLongExtra("timeDiff", -1));
+                Application appli = new Application(app_name.toUpperCase(), readData("id_user"), (hours * 60 * 60 + minutes * 60), (int) getIntent().getLongExtra("timeDiff", -1));
 
                 //Ajout de l'humeur dans la base de donnée
                 database.addAppli(appli);
 
-                //Envoi de l'humeur dans la base de donnée du serveur
+                //Envoi dans la base de donnée du serveur
                 Send objSend = new Send();
                 objSend.setMyBDD(database);
                 objSend.execute("");
