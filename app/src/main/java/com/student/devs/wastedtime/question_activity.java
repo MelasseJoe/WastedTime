@@ -98,6 +98,8 @@ public class question_activity extends Activity {
                 //Creation d'une humeur à partir de l'id de l'utilisateur et de son humeur
                 Application appli = new Application(app_name.toUpperCase(), readData("id_user"), (hours * 60 * 60 + minutes * 60), (int) getIntent().getLongExtra("timeDiff", -1));
 
+
+
                 //Ajout de l'humeur dans la base de donnée
                 database.addAppli(appli);
 
